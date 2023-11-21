@@ -1,0 +1,4 @@
+fastapi==0.104.1
+logging==0.4.9.6
+uvicorn==0.24.0.post1
+black==23.11.0
