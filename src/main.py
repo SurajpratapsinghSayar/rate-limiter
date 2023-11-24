@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from .limiters import TokenBucketLimiter
 from .limiters import WindowCounterLimiter
+from .limiters import SlidingWindowCounterLimiter
 from datetime import datetime
 import logging
 import os
@@ -25,7 +26,9 @@ app = FastAPI()
 # --- Middleware ---
 
 # app.add_middleware(TokenBucketLimiter)
-app.add_middleware(WindowCounterLimiter)
+# app.add_middleware(WindowCounterLimiter)
+app.add_middleware(SlidingWindowCounterLimiter, window_size=60, threshold=100)
+
 
 
 @app.middleware("http")
