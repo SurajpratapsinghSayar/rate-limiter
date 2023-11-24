@@ -6,18 +6,17 @@ import multiprocessing
 import time
 
 
-def updateToken(ipBucket):
+def updateToken(ipBucket, bucketSize):
     while True:
-        print(f"ipBucket: {ipBucket}")
         for ip in ipBucket.keys():
-            if ipBucket[ip] < 10:
+            if ipBucket[ip] < bucketSize:
                 ipBucket[ip] += 1
         time.sleep(1)
 
 
-def checkTokenAvailability(ip, ipBucket) -> bool:
+def checkTokenAvailability(ip, ipBucket, bucketSize) -> bool:
     if ip not in ipBucket.keys():
-        ipBucket[ip] = 10
+        ipBucket[ip] = bucketSize
     if ipBucket[ip] > 0:
         ipBucket[ip] -= 1
         return True
@@ -30,11 +29,12 @@ class TokenBucketLimiter(BaseHTTPMiddleware):
     Middleware for throttling user access based on tokens.
     """
 
-    def __init__(self, app: FastAPI):
+    def __init__(self, app: FastAPI, bucketSize: int = 10):
         super().__init__(app)
+        self.bucketSize = bucketSize
         manager = multiprocessing.Manager()
         self.ipBucket = manager.dict()
-        process = multiprocessing.Process(target=updateToken, args=(self.ipBucket,))
+        process = multiprocessing.Process(target=updateToken, args=(self.ipBucket, self.bucketSize))
         process.start()
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
@@ -48,7 +48,7 @@ class TokenBucketLimiter(BaseHTTPMiddleware):
         Returns:
             Response: client response
         """
-        flag = checkTokenAvailability(request.client.host, self.ipBucket)
+        flag = checkTokenAvailability(request.client.host, self.ipBucket, self.bucketSize)
         if flag:
             response = await call_next(request)
             return response

@@ -29,7 +29,6 @@ class SlidingWindowCounterLimiter(BaseHTTPMiddleware):
             Response: client response
         """
         self.cleanup_expired_requests()
-        print(f"Request timestamp length =  {len(self.request_timestamp)}")
 
         if len(self.request_timestamp) < self.max_requests:
             self.request_timestamp.append(time.time())
@@ -52,12 +51,9 @@ class SlidingWindowCounterLimiter(BaseHTTPMiddleware):
         Remove expired requests from the sliding window.
         """
         current_time = time.time()
-        if self.request_timestamp:
-            print(f"Time diff current and first = {current_time - self.request_timestamp[0]}")
         while (
             self.request_timestamp
             and current_time - self.request_timestamp[0] > self.window_size
         ):
-            print("Popping------------>")
             self.request_timestamp.popleft()
 

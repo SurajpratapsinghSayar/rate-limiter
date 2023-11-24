@@ -25,9 +25,9 @@ app = FastAPI()
 
 # --- Middleware ---
 
-# app.add_middleware(TokenBucketLimiter)
-# app.add_middleware(WindowCounterLimiter)
-app.add_middleware(SlidingWindowCounterLimiter, window_size=60, threshold=100)
+# app.add_middleware(TokenBucketLimiter, bucketSize = 10)
+app.add_middleware(WindowCounterLimiter, window_size=60, threshold=100)
+# app.add_middleware(SlidingWindowCounterLimiter, window_size=60, threshold=100)
 
 
 

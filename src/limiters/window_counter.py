@@ -6,12 +6,10 @@ import multiprocessing
 import time
 
 
-def windowReset(requestCount):
+def windowReset(requestCount, windowTime, threshold):
     while True:
-        # Hardcoded to 60 requests per windowTime
-        requestCount.value = 60
-        # Hardcoded window timeframe to 60 seconds
-        time.sleep(60)
+        requestCount.value = threshold
+        time.sleep(windowTime)
 
 
 class WindowCounterLimiter(BaseHTTPMiddleware):
@@ -19,13 +17,15 @@ class WindowCounterLimiter(BaseHTTPMiddleware):
     Middleware for throttling user access based on threshold counter and window size of N seconds.
     """
 
-    def __init__(self, app: FastAPI):
+    def __init__(self, app: FastAPI, window_size: int = 60, threshold: int = 60):
         super().__init__(app)
+        self.window_size = window_size
+        self.threshold = threshold
         manager = multiprocessing.Manager()
-        self.requestCount = multiprocessing.Value("i", 60)
+        self.requestCount = multiprocessing.Value("i", threshold)
         process = multiprocessing.Process(
             target=windowReset,
-            args=(self.requestCount,),
+            args=(self.requestCount, self.window_size, self.threshold),
         )
         process.start()
 
